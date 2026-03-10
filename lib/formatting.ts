@@ -6,6 +6,6 @@ export function formatDate(iso: string): string {
   });
 }
 
-export function formatRupees(paise: number): string {
-  return new Intl.NumberFormat("en-IN").format(Math.round(paise / 100));
+export function formatRupees(rupees: number): string {
+  return new Intl.NumberFormat("en-IN").format(rupees);
 }

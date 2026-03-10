@@ -35,7 +35,7 @@ export interface ProblemListItem {
   flags_cleared: boolean;
   upvote_count: number;
   report_count: number;
-  amount_lost: number | null; // paise — divide by 100 for ₹
+  amount_lost: number | null; // in rupees (₹)
   poster_name: string | null;
   location_state: string | null;
   date_of_incident: string | null;
