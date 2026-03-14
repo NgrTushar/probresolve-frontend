@@ -3,6 +3,49 @@
 import { useState, useTransition } from "react";
 import type { Category, Domain } from "@/lib/types";
 import { createProblem } from "@/app/problems/new/actions";
+import CompanyAutocomplete from "@/components/CompanyAutocomplete";
+
+function formatIndianInput(raw: string): string {
+  const noDecimal = raw.split(".")[0];
+  const digits = noDecimal.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  const lastThree = digits.slice(-3);
+  const rest = digits.slice(0, -3);
+  return rest.length > 0
+    ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree
+    : lastThree;
+}
+
+function parseRawAmount(formatted: string): string {
+  const noDecimal = formatted.split(".")[0];
+  return noDecimal.replace(/[^0-9]/g, "");
+}
+
+function AmountLostInput() {
+  const [displayValue, setDisplayValue] = useState("");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayValue(formatIndianInput(e.target.value));
+  };
+  return (
+    <div>
+      <label htmlFor="amount_lost" className="block text-sm font-medium text-gray-700 mb-1">
+        Amount Lost (₹)
+      </label>
+      <input
+        id="amount_lost"
+        name="amount_lost"
+        type="text"
+        inputMode="numeric"
+        value={displayValue}
+        onChange={handleChange}
+        placeholder="e.g. 1,00,000"
+        autoComplete="off"
+        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+      />
+      <input type="hidden" name="amount_lost_raw" value={parseRawAmount(displayValue)} />
+    </div>
+  );
+}
 
 const STATES = [
   "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
@@ -20,6 +63,8 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export default function NewProblemForm({ domains }: { domains: Domain[] }) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedDomainId, setSelectedDomainId] = useState<string | null>(null);
+  const [companyKey, setCompanyKey] = useState(0);
   const [descLen, setDescLen] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -28,6 +73,8 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
   async function handleDomainChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const domainId = e.target.value;
+    setSelectedDomainId(domainId || null);
+    setCompanyKey((k) => k + 1);
     if (!domainId) { setCategories([]); return; }
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/domains/${domainId}/categories`
@@ -55,12 +102,19 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         return true;
       }).slice(0, MAX_FILES);
     });
-    setFileInputKey((k) => k + 1);
   }
 
   function removeFile(index: number) {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   }
+
+  // Today's date in IST (UTC+5:30) formatted as YYYY-MM-DD for the max attribute
+  const todayIST = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,7 +128,13 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
     }
 
     const phone = formData.get("poster_phone")?.toString().trim() ?? "";
-    const digits = phone.replace(/^\+?91/, "").replace(/^0/, "");
+    // Strip country code only when length makes it unambiguous:
+    // +91XXXXXXXXXX (13 chars) or 91XXXXXXXXXX (12 chars) → strip prefix
+    // 10-digit number starting with 91 (e.g. 9137789782) must NOT be stripped
+    let digits = phone;
+    if (/^\+91/.test(phone) && phone.length === 13) digits = phone.slice(3);
+    else if (/^91/.test(phone) && phone.length === 12) digits = phone.slice(2);
+    else if (/^0/.test(phone) && phone.length === 11) digits = phone.slice(1);
     if (!/^[6-9][0-9]{9}$/.test(digits)) {
       setError("Enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).");
       return;
@@ -86,7 +146,12 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
     startTransition(async () => {
       const result = await createProblem(formData);
-      if (result?.error) setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSelectedFiles([]);
+        setFileInputKey((k) => k + 1);
+      }
     });
   }
 
@@ -126,19 +191,24 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
       {/* Category */}
       <div>
         <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
-          Sub-category
+          Sub-category <span className="text-red-500">*</span>
         </label>
         <select
           name="category_id"
           id="category_id"
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          required
+          disabled={categories.length === 0}
+          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
-          <option value="">— Select domain first —</option>
+          <option value="">{categories.length === 0 ? "— Select domain first —" : "— Select sub-category —"}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       </div>
+
+      {/* Target Company */}
+      <CompanyAutocomplete key={companyKey} domainId={selectedDomainId} />
 
       {/* Title */}
       <div>
@@ -202,25 +272,14 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
             type="date"
             name="date_of_incident"
             id="date_of_incident"
+            max={todayIST}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
           />
         </div>
       </div>
 
       {/* Amount lost */}
-      <div>
-        <label htmlFor="amount_lost" className="block text-sm font-medium text-gray-700 mb-1">
-          Amount Lost (₹)
-        </label>
-        <input
-          type="number"
-          name="amount_lost"
-          id="amount_lost"
-          min={0}
-          placeholder="e.g. 50000"
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
-        />
-      </div>
+      <AmountLostInput />
 
       {/* Contact info */}
       <div className="border border-brand-smoke rounded-lg p-4 bg-brand-mist space-y-3">

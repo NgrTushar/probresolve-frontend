@@ -4,14 +4,14 @@ import Link from "next/link";
 import UpvoteButton from "@/components/UpvoteButton";
 import ReportButton from "@/components/ReportButton";
 import { getProblem } from "@/lib/api";
-import { formatDate, formatRupees } from "@/lib/formatting";
+import { formatDate, formatIndianRupees } from "@/lib/formatting";
 
 type Props = {
   params: Promise<{ id: string; slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
-  const { id, slug } = await params;
+  const { id } = await params;
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown";
   const ua = headersList.get("user-agent") || "";
@@ -83,6 +83,11 @@ export default async function ProblemDetailPage({ params }: Props) {
               <span className="bg-brand-navy/10 text-brand-navy px-2 py-1 rounded-full">
                 {problem.domain.icon} {problem.domain.name}
               </span>
+              {problem.company && (
+                <span className="bg-brand-navy/5 text-brand-navy px-2 py-1 rounded-full border border-brand-navy/10 font-medium">
+                  🏢 {problem.company.name}
+                </span>
+              )}
               {problem.category && (
                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                   {problem.category.name}
@@ -129,7 +134,7 @@ export default async function ProblemDetailPage({ params }: Props) {
                 Amount Lost
               </dt>
               <dd className="font-medium text-brand-orange">
-                ₹{formatRupees(problem.amount_lost)}
+                {formatIndianRupees(problem.amount_lost)}
               </dd>
             </div>
           )}
@@ -231,27 +236,35 @@ export default async function ProblemDetailPage({ params }: Props) {
       {/* Escalation card */}
       {problem.escalation_links.length > 0 && (
         <div className="mt-6 bg-brand-navy/5 border border-brand-smoke rounded-lg p-5">
-          <h2 className="text-sm font-bold text-brand-navy mb-3">
-            Where to escalate this complaint
+          <h2 className="text-sm font-bold text-brand-navy mb-1">
+            🚨 Where to escalate this complaint
           </h2>
-          <ul className="space-y-3">
+          <p className="text-xs text-brand-slate mb-4">
+            Follow these steps in order. All links are official government portals.
+          </p>
+          <ol className="space-y-4">
             {problem.escalation_links.map((link, i) => (
               <li key={i} className="flex gap-3">
-                <span className="text-brand-orange mt-0.5">→</span>
-                <div>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-medium text-brand-navy hover:underline"
+                    className="text-sm font-semibold text-brand-navy hover:text-brand-orange hover:underline"
                   >
-                    {link.name}
+                    {link.name} ↗
                   </a>
-                  <p className="text-xs text-brand-slate mt-0.5">{link.description}</p>
+                  <p className="text-xs text-brand-slate mt-0.5 leading-relaxed">{link.description}</p>
                 </div>
               </li>
             ))}
-          </ul>
+          </ol>
+          <p className="mt-4 text-xs text-gray-400 italic border-t border-brand-smoke pt-3">
+            ProbResolve is not affiliated with any of the above portals. Links are provided for consumer awareness only.
+          </p>
         </div>
       )}
 

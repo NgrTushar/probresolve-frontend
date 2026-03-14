@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ProblemListItem } from "@/lib/types";
-import { formatDate, formatRupees } from "@/lib/formatting";
+import { formatDate, formatIndianRupees } from "@/lib/formatting";
 
 export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
   const underReview =
@@ -43,6 +43,11 @@ export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
           <span className="bg-brand-navy/10 text-brand-navy px-2 py-0.5 rounded-full">
             {problem.domain.icon} {problem.domain.name}
           </span>
+          {problem.company && (
+            <span className="bg-brand-navy/5 text-brand-navy px-2 py-0.5 rounded-full border border-brand-navy/10">
+              🏢 {problem.company.name}
+            </span>
+          )}
           {problem.category && (
             <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
               {problem.category.name}
@@ -50,7 +55,7 @@ export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
           )}
           {problem.location_state && <span>📍 {problem.location_state}</span>}
           {problem.amount_lost != null && (
-            <span>💸 ₹{formatRupees(problem.amount_lost)}</span>
+            <span>💸 {formatIndianRupees(problem.amount_lost)}</span>
           )}
           <span>{formatDate(problem.created_at)}</span>
           {problem.is_verified && (

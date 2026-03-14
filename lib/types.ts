@@ -11,6 +11,11 @@ export interface Category {
   slug: string;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+}
+
 export interface Evidence {
   id: string;
   file_url: string;
@@ -30,12 +35,13 @@ export interface ProblemListItem {
   slug: string;
   domain: Domain;
   category: Category | null;
+  company: Company | null;
   is_resolved: boolean;
   is_verified: boolean;
   flags_cleared: boolean;
   upvote_count: number;
   report_count: number;
-  amount_lost: number | null; // in rupees (₹)
+  amount_lost: number | null; // exact Rupees — display as-is with Indian formatting
   poster_name: string | null;
   location_state: string | null;
   date_of_incident: string | null;
