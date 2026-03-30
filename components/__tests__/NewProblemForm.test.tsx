@@ -95,13 +95,13 @@ describe("file size validation", () => {
     expect(screen.getByText(/0\/5/)).toBeInTheDocument();
   });
 
-  it("A5: error stays when next batch has only valid files", () => {
+  it("A5: error cleared when next batch has only valid files", () => {
     render(<NewProblemForm domains={mockDomains} />);
     changeFiles([makeFile("bad.pdf", 11)]);
     expect(screen.getByText(/exceed 10 MB/i)).toBeInTheDocument();
-    // Now add a valid file — error should NOT be cleared (component only sets error, never clears on file change)
+    // Now add a valid file — error IS cleared (stale error removed for good UX)
     changeFiles([makeFile("good.pdf", 1)]);
-    expect(screen.getByText(/exceed 10 MB/i)).toBeInTheDocument();
+    expect(screen.queryByText(/exceed 10 MB/i)).not.toBeInTheDocument();
   });
 
   it("A6: error replaced when next batch has different rejection", () => {
@@ -141,12 +141,12 @@ describe("file deduplication", () => {
 // ── C. MAX_FILES Cap ─────────────────────────────────────────────────────────
 
 describe("file count cap", () => {
-  it("C1: 6 valid files at once → 5/5 + input gone", () => {
+  it("C1: 6 valid files at once → 5/5 + input disabled", () => {
     render(<NewProblemForm domains={mockDomains} />);
     const files = Array.from({ length: 6 }, (_, i) => makeFile(`f${i}.pdf`, 1));
     changeFiles(files);
     expect(screen.getByText(/5\/5/)).toBeInTheDocument();
-    expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
+    expect(getFileInput()).toBeDisabled();
   });
 
   it("C2: 3 then 3 more → 5/5; 6th dropped", () => {
@@ -158,14 +158,14 @@ describe("file count cap", () => {
     expect(screen.getByText(/5\/5/)).toBeInTheDocument();
   });
 
-  it("C3: 5 valid + 1 oversized at once → 5/5 + error + input gone", () => {
+  it("C3: 5 valid + 1 oversized at once → 5/5 + error + input disabled", () => {
     render(<NewProblemForm domains={mockDomains} />);
     const files = Array.from({ length: 5 }, (_, i) => makeFile(`v${i}.pdf`, 1));
     files.push(makeFile("toobig.pdf", 11));
     changeFiles(files);
     expect(screen.getByText(/5\/5/)).toBeInTheDocument();
     expect(screen.getByText(/exceed 10 MB/i)).toBeInTheDocument();
-    expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
+    expect(getFileInput()).toBeDisabled();
   });
 });
 
@@ -200,16 +200,16 @@ describe("remove file", () => {
     expect(screen.getByText(/2\/5/)).toBeInTheDocument();
   });
 
-  it("D3: remove one from 5/5 → input reappears + 4/5", async () => {
+  it("D3: remove one from 5/5 → input re-enabled + 4/5", async () => {
     const user = userEvent.setup();
     render(<NewProblemForm domains={mockDomains} />);
     const files = Array.from({ length: 5 }, (_, i) => makeFile(`f${i}.pdf`, 1));
     changeFiles(files);
-    expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
+    expect(getFileInput()).toBeDisabled();
 
     const removeButtons = screen.getAllByRole("button", { name: /remove/i });
     await user.click(removeButtons[0]);
-    expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
+    expect(getFileInput()).not.toBeDisabled();
     expect(screen.getByText(/4\/5/)).toBeInTheDocument();
   });
 });
@@ -222,10 +222,10 @@ describe("file input visibility", () => {
     expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
   });
 
-  it("E2: after 5 files → input absent", () => {
+  it("E2: after 5 files → input disabled", () => {
     render(<NewProblemForm domains={mockDomains} />);
     changeFiles(Array.from({ length: 5 }, (_, i) => makeFile(`f${i}.pdf`, 1)));
-    expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
+    expect(getFileInput()).toBeDisabled();
   });
 
   it("E3: at 4 files → input present", () => {

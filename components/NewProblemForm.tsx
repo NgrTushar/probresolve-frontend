@@ -60,6 +60,7 @@ const STATES = [
 
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_TOTAL_BYTES = 40 * 1024 * 1024; // 40 MB total
 
 export default function NewProblemForm({ domains }: { domains: Domain[] }) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -89,18 +90,28 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
     if (rejected.length > 0) {
       setError(`These files exceed 10 MB and were not added: ${rejected.map(f => f.name).join(", ")}`);
+    } else {
+      setError(null);
     }
 
     setSelectedFiles((prev) => {
       const merged = [...prev, ...valid];
       // Deduplicate by name + size, cap at MAX_FILES
       const seen = new Set<string>();
-      return merged.filter((f) => {
+      const deduped = merged.filter((f) => {
         const key = `${f.name}-${f.size}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       }).slice(0, MAX_FILES);
+
+      // Check total size
+      const totalSize = deduped.reduce((sum, f) => sum + f.size, 0);
+      if (totalSize > MAX_TOTAL_BYTES) {
+        setError(`Total file size (${(totalSize / 1024 / 1024).toFixed(1)} MB) exceeds 40 MB. Remove some files.`);
+      }
+
+      return deduped;
     });
   }
 
@@ -137,6 +148,13 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
     else if (/^0/.test(phone) && phone.length === 11) digits = phone.slice(1);
     if (!/^[6-9][0-9]{9}$/.test(digits)) {
       setError("Enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).");
+      return;
+    }
+
+    // Check total file size before submitting
+    const totalFileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+    if (totalFileSize > MAX_TOTAL_BYTES) {
+      setError(`Total file size (${(totalFileSize / 1024 / 1024).toFixed(1)} MB) exceeds 40 MB. Remove some files before submitting.`);
       return;
     }
 
@@ -346,7 +364,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Evidence{" "}
           <span className="text-gray-400 font-normal">
-            (optional — up to {MAX_FILES} files, 10 MB each)
+            (optional — up to {MAX_FILES} files, 10 MB each, 40 MB total)
           </span>
         </label>
 
@@ -371,7 +389,6 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         <input
           key={fileInputKey}
           type="file"
-          name="files"
           id="files"
           multiple
           disabled={selectedFiles.length >= MAX_FILES}
@@ -381,7 +398,9 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         />
 
         <p className="mt-1 text-xs text-gray-400">
-          {selectedFiles.length}/{MAX_FILES} files · Images (JPG, PNG, WEBP, HEIC), PDF, Word (DOC/DOCX), Excel (XLS/XLSX), TXT · Max 10 MB each
+          {selectedFiles.length}/{MAX_FILES} files
+          {selectedFiles.length > 0 && ` · ${(selectedFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB / 40 MB`}
+          {" "}· Images (JPG, PNG, WEBP, HEIC), PDF, Word (DOC/DOCX), Excel (XLS/XLSX), TXT · Max 10 MB each
         </p>
       </div>
 
