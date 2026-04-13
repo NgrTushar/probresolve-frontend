@@ -38,7 +38,7 @@ export default function UpvoteButton({
       onClick={handleUpvote}
       disabled={voted || loading}
       className={`flex flex-col items-center transition-colors ${
-        voted ? "text-brand-green cursor-default" : "text-gray-400 hover:text-brand-green"
+        voted ? "text-brand-green cursor-default" : "text-dark-muted hover:text-brand-green"
       }`}
       title={voted ? "You voted" : "Upvote"}
     >

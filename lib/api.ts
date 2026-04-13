@@ -1,4 +1,4 @@
-import type { Category, Domain, ProblemDetail, ProblemListItem } from "./types";
+import type { CompanyScoreEntry, Domain, ProblemDetail, ProblemListItem } from "./types";
 
 // Server-side base URL (used in Server Components + Server Actions)
 const API = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -39,11 +39,24 @@ export async function getProblem(
 
 export async function searchProblems(
   q: string,
-  page = 1
+  page = 1,
+  domain_id?: string
 ): Promise<ProblemListItem[]> {
   if (!q.trim()) return [];
   const params = new URLSearchParams({ q, page: String(page) });
+  if (domain_id) params.set("domain_id", domain_id);
   const res = await fetch(`${API}/api/search?${params}`, { cache: "no-store" });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getScoreboard(
+  domain_id?: string,
+  sort: "complaints" | "amount" = "complaints"
+): Promise<CompanyScoreEntry[]> {
+  const params = new URLSearchParams({ sort });
+  if (domain_id) params.set("domain_id", domain_id);
+  const res = await fetch(`${API}/api/scoreboard?${params}`, { cache: "no-store" });
   if (!res.ok) return [];
   return res.json();
 }

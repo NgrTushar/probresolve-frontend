@@ -8,9 +8,32 @@
   --color-brand-mist:   #F4F8F7;
   --color-brand-smoke:  #C8DEDD;
   --color-brand-ink:    #111827;
+
+  --color-dark-bg:      #0d1117;
+  --color-dark-surface: #161b22;
+  --color-dark-border:  #30363d;
+  --color-dark-muted:   #8b949e;
+  --color-dark-pop:     #e6edf3;
 }
 
 body {
-  background: #F4F8F7;
-  color: #111827;
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+/* Make native date-picker icon visible on dark bg */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+input[type="date"] {
+  color-scheme: dark;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

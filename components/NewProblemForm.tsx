@@ -21,6 +21,9 @@ function parseRawAmount(formatted: string): string {
   return noDecimal.replace(/[^0-9]/g, "");
 }
 
+const inputCls = "w-full bg-dark-bg border border-dark-border text-dark-pop rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy placeholder:text-dark-muted";
+const labelCls = "block text-sm font-medium text-dark-pop mb-1";
+
 function AmountLostInput() {
   const [displayValue, setDisplayValue] = useState("");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +31,7 @@ function AmountLostInput() {
   };
   return (
     <div>
-      <label htmlFor="amount_lost" className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor="amount_lost" className={labelCls}>
         Amount Lost (₹)
       </label>
       <input
@@ -40,7 +43,7 @@ function AmountLostInput() {
         onChange={handleChange}
         placeholder="e.g. 1,00,000"
         autoComplete="off"
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+        className={inputCls}
       />
       <input type="hidden" name="amount_lost_raw" value={parseRawAmount(displayValue)} />
     </div>
@@ -96,7 +99,6 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
     setSelectedFiles((prev) => {
       const merged = [...prev, ...valid];
-      // Deduplicate by name + size, cap at MAX_FILES
       const seen = new Set<string>();
       const deduped = merged.filter((f) => {
         const key = `${f.name}-${f.size}`;
@@ -105,7 +107,6 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         return true;
       }).slice(0, MAX_FILES);
 
-      // Check total size
       const totalSize = deduped.reduce((sum, f) => sum + f.size, 0);
       if (totalSize > MAX_TOTAL_BYTES) {
         setError(`Total file size (${(totalSize / 1024 / 1024).toFixed(1)} MB) exceeds 40 MB. Remove some files.`);
@@ -119,7 +120,6 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // Today's date in IST (UTC+5:30) formatted as YYYY-MM-DD for the max attribute
   const todayIST = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
     year: "numeric",
@@ -139,9 +139,6 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
     }
 
     const phone = formData.get("poster_phone")?.toString().trim() ?? "";
-    // Strip country code only when length makes it unambiguous:
-    // +91XXXXXXXXXX (13 chars) or 91XXXXXXXXXX (12 chars) → strip prefix
-    // 10-digit number starting with 91 (e.g. 9137789782) must NOT be stripped
     let digits = phone;
     if (/^\+91/.test(phone) && phone.length === 13) digits = phone.slice(3);
     else if (/^91/.test(phone) && phone.length === 12) digits = phone.slice(2);
@@ -151,14 +148,12 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
       return;
     }
 
-    // Check total file size before submitting
     const totalFileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
     if (totalFileSize > MAX_TOTAL_BYTES) {
       setError(`Total file size (${(totalFileSize / 1024 / 1024).toFixed(1)} MB) exceeds 40 MB. Remove some files before submitting.`);
       return;
     }
 
-    // Replace file input entries with our accumulated state
     formData.delete("files");
     selectedFiles.forEach((f) => formData.append("files", f));
 
@@ -177,17 +172,17 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
     <form
       onSubmit={handleSubmit}
       encType="multipart/form-data"
-      className="bg-white rounded-lg border border-gray-200 p-6 space-y-5"
+      className="bg-dark-surface rounded-lg border border-dark-border p-6 space-y-5"
     >
       {error && (
-        <div className="border border-red-200 bg-red-50 rounded p-3 text-sm text-red-700">
+        <div className="border border-red-800 bg-red-900/20 rounded p-3 text-sm text-red-400">
           {error}
         </div>
       )}
 
       {/* Domain */}
       <div>
-        <label htmlFor="domain_id" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="domain_id" className={labelCls}>
           Category of Fraud <span className="text-red-500">*</span>
         </label>
         <select
@@ -195,7 +190,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
           id="domain_id"
           required
           onChange={handleDomainChange}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          className={inputCls}
         >
           <option value="">— Select domain —</option>
           {domains.map((d) => (
@@ -208,7 +203,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
       {/* Category */}
       <div>
-        <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category_id" className={labelCls}>
           Sub-category <span className="text-red-500">*</span>
         </label>
         <select
@@ -216,7 +211,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
           id="category_id"
           required
           disabled={categories.length === 0}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+          className={`${inputCls} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <option value="">{categories.length === 0 ? "— Select domain first —" : "— Select sub-category —"}</option>
           {categories.map((c) => (
@@ -230,7 +225,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
 
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className={labelCls}>
           Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -240,13 +235,13 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
           required
           maxLength={300}
           placeholder="Brief summary of the fraud"
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          className={inputCls}
         />
       </div>
 
       {/* Description with live counter */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className={labelCls}>
           What happened? <span className="text-red-500">*</span>
         </label>
         <textarea
@@ -257,33 +252,33 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
           minLength={150}
           placeholder="Describe the fraud in detail — include dates, amounts, reference numbers, and steps you already took…"
           onChange={(e) => setDescLen(e.target.value.length)}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          className={inputCls}
         />
         <p className="mt-1 text-xs">
-          <span className={descLen >= 150 ? "text-brand-green font-medium" : "text-gray-400"}>
+          <span className={descLen >= 150 ? "text-brand-green font-medium" : "text-dark-muted"}>
             {descLen}
           </span>
-          <span className="text-gray-400"> / 150 characters minimum</span>
+          <span className="text-dark-muted"> / 150 characters minimum</span>
         </p>
       </div>
 
       {/* State + date */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="location_state" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location_state" className={labelCls}>
             State (India)
           </label>
           <select
             name="location_state"
             id="location_state"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+            className={inputCls}
           >
             <option value="">— Select state —</option>
             {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="date_of_incident" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="date_of_incident" className={labelCls}>
             Date of Incident
           </label>
           <input
@@ -291,7 +286,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
             name="date_of_incident"
             id="date_of_incident"
             max={todayIST}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+            className={inputCls}
           />
         </div>
       </div>
@@ -300,14 +295,14 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
       <AmountLostInput />
 
       {/* Contact info */}
-      <div className="border border-brand-smoke rounded-lg p-4 bg-brand-mist space-y-3">
-        <p className="text-sm font-medium text-gray-700">
+      <div className="border border-dark-border rounded-lg p-4 bg-dark-bg space-y-3">
+        <p className="text-sm font-medium text-dark-pop">
           Contact Info <span className="text-red-500">*</span>
         </p>
         <div>
-          <label htmlFor="poster_name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="poster_name" className={labelCls}>
             Full name <span className="text-red-500">*</span>
-            <span className="text-gray-400 font-normal ml-1">(shown publicly)</span>
+            <span className="text-dark-muted font-normal ml-1">(shown publicly)</span>
           </label>
           <input
             type="text"
@@ -315,13 +310,13 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
             id="poster_name"
             required
             placeholder="Your full name"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+            className={inputCls}
           />
         </div>
         <div>
-          <label htmlFor="poster_email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="poster_email" className={labelCls}>
             Email <span className="text-red-500">*</span>
-            <span className="text-gray-400 font-normal ml-1">(private)</span>
+            <span className="text-dark-muted font-normal ml-1">(private)</span>
           </label>
           <input
             type="email"
@@ -329,16 +324,16 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
             id="poster_email"
             required
             placeholder="you@example.com"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+            className={inputCls}
           />
         </div>
         <div>
-          <label htmlFor="poster_phone" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="poster_phone" className={labelCls}>
             Mobile number <span className="text-red-500">*</span>
-            <span className="text-gray-400 font-normal ml-1">(private)</span>
+            <span className="text-dark-muted font-normal ml-1">(private)</span>
           </label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 rounded-l bg-gray-50 text-sm text-gray-500 select-none">
+            <span className="inline-flex items-center px-3 py-2 border border-r-0 border-dark-border rounded-l bg-dark-border text-sm text-dark-muted select-none">
               +91
             </span>
             <input
@@ -349,35 +344,34 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
               maxLength={10}
               pattern="[6-9][0-9]{9}"
               placeholder="9876543210"
-              className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+              className="flex-1 bg-dark-bg border border-dark-border text-dark-pop rounded-r px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy placeholder:text-dark-muted"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">10-digit Indian mobile number</p>
+          <p className="mt-1 text-xs text-dark-muted">10-digit Indian mobile number</p>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-dark-muted">
           Your contact details are used only to verify complaints and enable resolution. They are never shown publicly.
         </p>
       </div>
 
       {/* Evidence files */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Evidence{" "}
-          <span className="text-gray-400 font-normal">
+          <span className="text-dark-muted font-normal">
             (optional — up to {MAX_FILES} files, 10 MB each, 40 MB total)
           </span>
         </label>
 
-        {/* Selected files list */}
         {selectedFiles.length > 0 && (
           <ul className="mb-2 space-y-1">
             {selectedFiles.map((f, i) => (
-              <li key={i} className="flex items-center justify-between bg-brand-mist border border-brand-smoke rounded px-3 py-1.5 text-sm">
-                <span className="truncate text-gray-700">📎 {f.name} <span className="text-gray-400 text-xs">({(f.size / 1024 / 1024).toFixed(2)} MB)</span></span>
+              <li key={i} className="flex items-center justify-between bg-dark-bg border border-dark-border rounded px-3 py-1.5 text-sm">
+                <span className="truncate text-dark-pop">📎 {f.name} <span className="text-dark-muted text-xs">({(f.size / 1024 / 1024).toFixed(2)} MB)</span></span>
                 <button
                   type="button"
                   onClick={() => removeFile(i)}
-                  className="ml-3 text-red-400 hover:text-red-600 text-xs font-medium flex-shrink-0"
+                  className="ml-3 text-red-400 hover:text-red-300 text-xs font-medium flex-shrink-0"
                 >
                   Remove
                 </button>
@@ -394,10 +388,10 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
           disabled={selectedFiles.length >= MAX_FILES}
           accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.txt"
           onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-brand-navy/10 file:text-brand-navy hover:file:bg-brand-navy/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="block w-full text-sm text-dark-muted file:mr-3 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-brand-navy/30 file:text-dark-pop hover:file:bg-brand-navy/50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         />
 
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="mt-1 text-xs text-dark-muted">
           {selectedFiles.length}/{MAX_FILES} files
           {selectedFiles.length > 0 && ` · ${(selectedFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB / 40 MB`}
           {" "}· Images (JPG, PNG, WEBP, HEIC), PDF, Word (DOC/DOCX), Excel (XLS/XLSX), TXT · Max 10 MB each
@@ -405,7 +399,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
       </div>
 
       {/* Deterrence warning */}
-      <div className="border border-amber-200 bg-amber-50 rounded p-3 text-xs text-amber-800">
+      <div className="border border-amber-800 bg-amber-900/20 rounded p-3 text-xs text-amber-400">
         ⚠️ False or defamatory complaints are a violation of our terms and will be removed.
         Your IP address is logged with every submission.
       </div>

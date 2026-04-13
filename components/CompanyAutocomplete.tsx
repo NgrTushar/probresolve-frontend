@@ -37,7 +37,7 @@ export default function CompanyAutocomplete({ domainId }: Props) {
     <div>
       <label
         htmlFor="company_name"
-        className="block text-sm font-medium text-gray-700 mb-1"
+        className="block text-sm font-medium text-dark-pop mb-1"
       >
         Target Entity / Company
       </label>
@@ -52,7 +52,7 @@ export default function CompanyAutocomplete({ domainId }: Props) {
             ? "Select a domain first"
             : "e.g. Amazon India, HDFC Bank..."
         }
-        className={`w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy ${disabled ? "bg-gray-50 text-gray-400 cursor-not-allowed" : ""}`}
+        className={`w-full bg-dark-bg border border-dark-border text-dark-pop rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy placeholder:text-dark-muted ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoComplete="off"
@@ -70,7 +70,7 @@ export default function CompanyAutocomplete({ domainId }: Props) {
             </option>
           )}
       </datalist>
-      <p className="mt-1 text-xs text-gray-500">
+      <p className="mt-1 text-xs text-dark-muted">
         {disabled
           ? "Choose a domain above to see relevant companies."
           : "Leave blank if not applicable. Search or type the name manually."}

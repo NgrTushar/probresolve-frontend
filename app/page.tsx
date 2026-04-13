@@ -31,11 +31,32 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-navy">Recent Complaints</h1>
-        <p className="text-brand-slate text-sm mt-1">
-          Browse fraud reports from across India. Upvote to amplify.
+      {/* Hero section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-dark-pop mb-2">Consumer Complaint Board</h1>
+        <p className="text-dark-muted text-sm mb-6">
+          Browse fraud reports from across India. Upvote to amplify. Hold companies accountable.
         </p>
+        <form action="/search" method="get" className="flex max-w-xl mb-4">
+          <input
+            name="q"
+            type="search"
+            placeholder="Search company names, fraud types…"
+            className="flex-1 bg-dark-surface border border-dark-border rounded-l-lg px-4 py-3 text-sm text-dark-pop placeholder:text-dark-muted focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          />
+          <button
+            type="submit"
+            className="bg-brand-navy text-white px-5 py-3 text-sm font-medium rounded-r-lg hover:bg-brand-navy/90"
+          >
+            Search
+          </button>
+        </form>
+        <Link
+          href="/scoreboard"
+          className="text-brand-green hover:text-brand-green/80 text-sm font-medium"
+        >
+          View Scoreboard →
+        </Link>
       </div>
 
       {/* Domain filter tabs */}
@@ -46,7 +67,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       {/* Problem list */}
       <div className="space-y-4">
         {problems.length === 0 ? (
-          <p className="text-gray-500 py-12 text-center">
+          <p className="text-dark-muted py-12 text-center">
             No complaints yet.{" "}
             <Link href="/problems/new" className="text-brand-orange hover:underline">
               Be the first to post one.
@@ -63,7 +84,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           {prevPage && (
             <Link
               href={pageUrl(prevPage)}
-              className="bg-white border border-brand-smoke text-brand-navy px-6 py-2 rounded hover:bg-brand-mist text-sm"
+              className="bg-dark-surface border border-dark-border text-dark-pop px-6 py-2 rounded hover:bg-dark-border/50 text-sm"
             >
               ← Previous
             </Link>
@@ -71,7 +92,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           {nextPage && (
             <Link
               href={pageUrl(nextPage)}
-              className="bg-white border border-brand-smoke text-brand-navy px-6 py-2 rounded hover:bg-brand-mist text-sm"
+              className="bg-dark-surface border border-dark-border text-dark-pop px-6 py-2 rounded hover:bg-dark-border/50 text-sm"
             >
               Load more →
             </Link>

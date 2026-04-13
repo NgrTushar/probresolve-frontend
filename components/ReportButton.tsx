@@ -45,7 +45,7 @@ export default function ReportButton({
 
   if (reported) {
     return (
-      <span className="text-sm text-gray-400 cursor-default">🚩 Reported</span>
+      <span className="text-sm text-dark-muted cursor-default">🚩 Reported</span>
     );
   }
 
@@ -55,7 +55,7 @@ export default function ReportButton({
         <select
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+          className="bg-dark-bg border border-dark-border text-dark-pop rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
         >
           {REASONS.map((r) => (
             <option key={r.value} value={r.value}>
@@ -72,7 +72,7 @@ export default function ReportButton({
         </button>
         <button
           onClick={() => setShowForm(false)}
-          className="text-gray-400 hover:text-brand-slate text-sm"
+          className="text-dark-muted hover:text-dark-pop text-sm"
         >
           Cancel
         </button>
@@ -83,7 +83,7 @@ export default function ReportButton({
   return (
     <button
       onClick={() => setShowForm(true)}
-      className="text-sm text-gray-400 hover:text-brand-orange transition-colors"
+      className="text-sm text-dark-muted hover:text-brand-orange transition-colors"
     >
       🚩 Report
     </button>

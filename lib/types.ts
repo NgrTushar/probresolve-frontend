@@ -56,3 +56,18 @@ export interface ProblemDetail extends ProblemListItem {
   already_reported: boolean;
   escalation_links: EscalationLink[];
 }
+
+export interface CompanyScoreEntry {
+  id: string;
+  name: string;
+  domain: Domain | null;
+  complaint_count: number;
+  total_amount_lost: number; // 0 when no amounts filed
+}
+
+export interface CategoryScore {
+  id: string | null;  // null = "Uncategorized"
+  name: string;
+  complaint_count: number;
+  total_amount_lost: number;
+}

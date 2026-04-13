@@ -7,8 +7,11 @@ export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
     problem.report_count >= 5 && !problem.flags_cleared && !problem.is_verified;
 
   return (
-    <div className="bg-white rounded-lg border border-brand-smoke p-4 flex gap-4 hover:border-brand-navy transition-colors">
-      {/* Upvote count (display only on cards) */}
+    <Link
+      href={`/problems/${problem.id}/${problem.slug}`}
+      className="group bg-dark-surface rounded-lg border border-dark-border p-4 flex gap-4 hover:border-brand-navy transition-colors cursor-pointer"
+    >
+      {/* Upvote count */}
       <div className="flex-shrink-0 text-center min-w-[48px]">
         <div className="flex flex-col items-center text-brand-green">
           <svg
@@ -33,38 +36,35 @@ export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <Link
-          href={`/problems/${problem.id}/${problem.slug}`}
-          className="text-base font-semibold text-brand-ink hover:text-brand-navy line-clamp-2"
-        >
+        <span className="text-base font-semibold text-dark-pop group-hover:text-brand-green group-hover:underline underline-offset-2 line-clamp-2 transition-colors">
           {problem.title}
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-brand-slate">
-          <span className="bg-brand-navy/10 text-brand-navy px-2 py-0.5 rounded-full">
+        </span>
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-dark-muted">
+          <span className="bg-brand-navy/30 text-dark-pop px-2 py-0.5 rounded-full font-medium">
             {problem.domain.icon} {problem.domain.name}
           </span>
           {problem.company && (
-            <span className="bg-brand-navy/5 text-brand-navy px-2 py-0.5 rounded-full border border-brand-navy/10">
+            <span className="bg-dark-border/50 text-dark-pop px-2 py-0.5 rounded-full border border-dark-border">
               🏢 {problem.company.name}
             </span>
           )}
           {problem.category && (
-            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            <span className="bg-dark-border text-dark-muted px-2 py-0.5 rounded-full">
               {problem.category.name}
             </span>
           )}
           {problem.location_state && <span>📍 {problem.location_state}</span>}
           {problem.amount_lost != null && (
-            <span>💸 {formatIndianRupees(problem.amount_lost)}</span>
+            <span className="text-brand-green font-medium">💸 {formatIndianRupees(problem.amount_lost)}</span>
           )}
           <span>{formatDate(problem.created_at)}</span>
           {problem.is_verified && (
-            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full font-medium">
               ✅ Admin Verified
             </span>
           )}
           {underReview && (
-            <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="bg-amber-900/30 text-amber-400 px-2 py-0.5 rounded-full font-medium">
               ⚠️ Under Review
             </span>
           )}
@@ -73,6 +73,13 @@ export default function ProblemCard({ problem }: { problem: ProblemListItem }) {
           )}
         </div>
       </div>
-    </div>
+
+      {/* Arrow — Polymarket style */}
+      <div className="flex-shrink-0 flex items-center self-center text-dark-muted group-hover:text-brand-green transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </Link>
   );
 }

@@ -14,12 +14,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-brand-mist text-brand-ink min-h-screen flex flex-col">
+      <body className="bg-dark-bg text-dark-pop min-h-screen flex flex-col">
         {/* Nav */}
-        <nav className="bg-white border-b border-brand-smoke sticky top-0 z-10">
+        <nav className="bg-dark-surface border-b border-dark-border sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-16">
             <Link href="/" className="flex-shrink-0">
-              <Image src="/primary_logo.svg" alt="ProbResolve" width={240} height={68} className="h-12 w-auto" />
+              <Image src="/primary_logo.svg" alt="ProbResolve" width={240} height={68} className="h-12 w-auto" unoptimized />
             </Link>
             <div className="flex items-center gap-4">
               <form action="/search" method="get" className="hidden sm:flex">
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   name="q"
                   type="search"
                   placeholder="Search complaints…"
-                  className="border border-brand-smoke rounded-l px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
+                  className="bg-dark-bg border border-dark-border text-dark-pop placeholder:text-dark-muted rounded-l px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-navy"
                 />
                 <button
                   type="submit"
@@ -36,6 +36,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Search
                 </button>
               </form>
+              <Link
+                href="/scoreboard"
+                className="text-dark-muted hover:text-dark-pop text-sm font-medium transition-colors hidden sm:block"
+              >
+                Scoreboard
+              </Link>
               <Link
                 href="/problems/new"
                 className="bg-brand-orange text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-brand-orange/90"
