@@ -139,12 +139,7 @@ export default async function ProblemDetailPage({ params }: Props) {
               <dd className="font-medium text-dark-pop">{formatDate(problem.date_of_incident)}</dd>
             </div>
           )}
-          {problem.poster_name && (
-            <div>
-              <dt className="text-dark-muted text-xs uppercase tracking-wide mb-1">Posted by</dt>
-              <dd className="font-medium text-dark-pop">{problem.poster_name}</dd>
-            </div>
-          )}
+
           <div>
             <dt className="text-dark-muted text-xs uppercase tracking-wide mb-1">Posted on</dt>
             <dd className="font-medium text-dark-pop">{formatDate(problem.created_at)}</dd>

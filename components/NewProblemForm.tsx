@@ -302,7 +302,7 @@ export default function NewProblemForm({ domains }: { domains: Domain[] }) {
         <div>
           <label htmlFor="poster_name" className={labelCls}>
             Full name <span className="text-red-500">*</span>
-            <span className="text-dark-muted font-normal ml-1">(shown publicly)</span>
+            <span className="text-dark-muted font-normal ml-1">(private)</span>
           </label>
           <input
             type="text"
